@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply antialiased selection:bg-indigo-500/30 selection:text-white;
+  }
+}
+
+@layer utilities {
+  .bg-grain {
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    filter: contrast(150%) brightness(1000%);
+  }
+
+  .markdown-body h3 {
+    @apply text-lg font-bold text-indigo-400 mt-8 mb-4 border-b border-indigo-500/20 pb-2 flex items-center gap-2;
+  }
+  .markdown-body p {
+    @apply text-slate-300 leading-relaxed mb-4;
+  }
+  .markdown-body ul {
+    @apply list-disc list-inside space-y-2 mb-6 text-slate-300;
+  }
+  .markdown-body li {
+    @apply pl-2;
+  }
+  .markdown-body strong {
+    @apply text-white font-bold;
+  }
+}
