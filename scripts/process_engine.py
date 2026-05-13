@@ -50,13 +50,9 @@ def preprocess(df: pd.DataFrame, churn_col: str, id_col: str = None):
     y_raw = df[churn_col].copy()
     df.drop(columns=[churn_col], inplace=True)
 
-    # Encode target → binary
-    if y_raw.dtype == object:
-        y_raw = y_raw.str.strip().str.lower().map(
-            lambda v: 1 if v in ["yes", "1", "true", "churn"] else 0
-        )
-    else:
-        y_raw = y_raw.astype(int)
+    # Encode target → binary (always via string mapping to handle Yes/No, 1/0, True/False)
+    y_str = y_raw.astype(str).str.strip().str.lower()
+    y_raw = y_str.map(lambda v: 1 if v in ["yes", "1", "true", "churn", "1.0"] else 0)
 
     # Convert all object cols that look numeric
     for col in df.select_dtypes(include="object").columns:

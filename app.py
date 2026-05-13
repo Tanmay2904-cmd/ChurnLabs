@@ -225,46 +225,35 @@ with tab1:
         with st.expander("👁️ Preview Data (first 8 rows)", expanded=True):
             st.dataframe(df_raw.head(8), use_container_width=True)
 
-        st.markdown("<div class='section-hdr'>Column Mapping</div>", unsafe_allow_html=True)
-        col_a, col_b = st.columns(2)
-
-        # Smart churn column detection: exact match → partial match → last col
+        # ── Auto-detect churn column & ID column (no dropdowns) ──────────────
         cols = list(df_raw.columns)
-        def _best_churn_idx(columns):
-            # 1. Exact case-insensitive match
-            for i, c in enumerate(columns):
-                if c.lower() == "churn":
-                    return i
-            # 2. Partial match
-            for i, c in enumerate(columns):
-                if "churn" in c.lower():
-                    return i
+
+        def _detect_churn_col(columns):
+            for c in columns:
+                if c.lower() == "churn": return c
+            for c in columns:
+                if "churn" in c.lower(): return c
             for kw in ["attrition", "churned", "left", "target", "label"]:
-                for i, c in enumerate(columns):
-                    if kw in c.lower():
-                        return i
-            # 3. Fallback: last column
-            return len(columns) - 1
+                for c in columns:
+                    if kw in c.lower(): return c
+            return columns[-1]  # last column fallback
 
-        churn_idx = _best_churn_idx(cols)
+        def _detect_id_col(columns):
+            for c in columns:
+                if any(k in c.lower() for k in ["id", "customer", "uid"]):
+                    return c
+            return None
 
-        with col_a:
-            churn_col = st.selectbox(
-                "🎯 Which column is the Churn label?",
-                options=cols,
-                index=churn_idx,
-            )
-        with col_b:
-            id_candidates = [c for c in cols if any(k in c.lower() for k in ["id","customer","uid"])]
-            id_options = ["(none)"] + cols
-            id_default = id_candidates[0] if id_candidates else "(none)"
-            id_col = st.selectbox(
-                "🪪 Customer ID column (will be excluded from training)",
-                options=id_options,
-                index=id_options.index(id_default),
-            )
-            if id_col == "(none)":
-                id_col = None
+        churn_col = _detect_churn_col(cols)
+        id_col    = _detect_id_col(cols)
+
+        # Show detected columns as info badges
+        ci1, ci2 = st.columns(2)
+        ci1.info(f"🎯 **Churn label column:** `{churn_col}`")
+        if id_col:
+            ci2.info(f"🪪 **Customer ID column:** `{id_col}`")
+        else:
+            ci2.info("🪪 **Customer ID:** not detected — using row index")
 
         st.markdown("<div class='section-hdr'>Train Models</div>", unsafe_allow_html=True)
 
